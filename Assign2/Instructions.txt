@@ -1,0 +1,14 @@
+SED:
+
+part1.sed ca be run with 
+sed -n -f part1.sed (inputfile)
+
+
+GREP:
+trialFile is the output of the 2nd part
+run each command seperately with input file as trialFile
+
+
+AWK:
+
+awk -f part3 (inputfile)

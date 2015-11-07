@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ "$1" == "create" ]; then
+{
+	if [ "$2" != "" ]; then
+	{
+		EVENTSTART=$(date --date="$2" "+%s")
+		echo $EVENTSTART
+	}
+	else
+	{
+		echo "error should be displayed here. use stderr exiting with non-zero(worng date)"	
+	}
+	fi
+	if  [ "$3" != "" ]; then
+	{	
+		DURATION=$(($3*60))
+		EVENTEND=$(($EVENTSTART+$DURATION))
+		echo $EVENTEND	
+		
+	}
+	else
+	{
+		echo "error should be displayed here. use stderr exiting with non-zero(worng duration)"	
+	}
+	fi	
+}
+else
+{
+	echo "error should be displayed here. use stderr exiting with non-zero(wrong option)"	
+}
+
+fi
+
+

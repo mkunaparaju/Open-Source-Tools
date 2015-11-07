@@ -1,0 +1,17 @@
+#Question1
+
+grep "193[0-9]" trialFile | cut -s -d"|" -f2
+
+#Question2
+
+cat trialFile | cut -s -d"|" -f2 |  grep -wE "(\w+).*\b\1\b" | wc -l
+
+#Question3
+
+cat trialFile | cut -s -d"|" -f1,2 | tr "|" "\n" | grep -B1  "[a-zA-Z]*[0-9\\.:-\';].*[A-Za-z].*"  | grep -v "[a-zA-Z]*[0-9\\.:-\';].*[A-Za-z].*"
+
+#Question4
+
+cat trialFile | cut -s -d"|" -f5 | grep -Eo "[0-4][0-9]{4}" | wc -l
+
+
