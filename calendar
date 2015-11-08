@@ -1,33 +1,117 @@
 #!/bin/bash
 
+
+TITLE=""
+DURATION=""
+EVENTSTART=""
+EVENTEND=""
+
+USER_HOME="$HOME"
+
+DIR="$USER_HOME/.calendar"
+
+if [ ! -d $DIR ]; then
+{
+	mkdir $DIR
+	echo "dir made"
+	echo $DIR
+}
+fi
+function error_exit
+{
+	echo "$1" 1>&2
+	exit 1
+}
+
 if [ "$1" == "create" ]; then
 {
+
 	if [ "$2" != "" ]; then
 	{
-		EVENTSTART=$(date --date="$2" "+%s")
-		echo $EVENTSTART
+	
+			EVENTSTART=$(date --date="$2" "+%s")
+			#echo $EVENTSTART
 	}
 	else
 	{
-		echo "error should be displayed here. use stderr exiting with non-zero(worng date)"	
+		error_exit "Please Provide Date"	
 	}
 	fi
+
 	if  [ "$3" != "" ]; then
-	{	
+	{
 		DURATION=$(($3*60))
-		EVENTEND=$(($EVENTSTART+$DURATION))
-		echo $EVENTEND	
-		
+		EVENTEND=$(($EVENTSTART+$DURATION ))
+		#echo $EVENTEND		
 	}
 	else
 	{
-		echo "error should be displayed here. use stderr exiting with non-zero(worng duration)"	
+		error_exit "Please provide duration"	
 	}
 	fi	
+
+	if [ "$4" != "" ]; then
+	{
+		TITLE="$4"
+		#echo $TITLE	
+	}
+	else
+	{
+		read -p "Enter title of the event > " TITLE
+		if [ "$TITLE" = "" ]; then 
+		{
+			error_exit "Title is required. Please Provide Title"
+		}
+		fi	
+	}
+	fi
+	if [ $(test -s /dev/stdin) ]; then
+	{
+		DESCRIPTION=$(< /dev/stdin) 
+		#echo $DESCRIPTION
+	}
+	#else
+	#{
+	#	read -p "Enter a Description(optional)" DESCRIPTION
+	#	echo $DESCRIPTION
+	#}
+	fi
+
+	if [ ! -f $DIR/$EVENTSTART ]; then
+	{
+		echo $DURATION > $DIR/$EVENTSTART
+		echo $TITLE > $DIR/$EVENTSTART
+	 	echo $DESCRIPTION > $DIR/$EVENTSTART
+	}
+	else
+	{
+		error_exit "Event Already exists at that time"
+	}
+	fi 
 }
+
+elif [ $1 == "delete" ]; then
+{
+	if [ -f $DIR/$2 ]; then
+	{
+		rm $DIR/$2
+		echo "delelted file "
+	}	
+	else
+	{
+		error_exit "file does not exist"
+	}
+	fi	
+	
+}
+
+elif [ $1 == "show" ]; then
+{
+		
+} 
 else
 {
-	echo "error should be displayed here. use stderr exiting with non-zero(wrong option)"	
+	error_exit "option not found. use only create option"	
 }
 
 fi
