@@ -112,7 +112,7 @@ elif [ $1 == "show" ]; then
 		DURAT=$(awk 'NR==1' $DIR/$2)
 	#	SECDURAT=$(())
 		NEWTITLE=$(awk 'NR==2' $DIR/$2)
-		NEWDDESC=$(awk 'NR>2' $DIR/$2)
+		NEWDDESC=$(awk 'NR>=3' $DIR/$2)
 		ENDTIMEEPOCH=$((($DURAT*60)+$2))
 		ENDTIME=$(date -d @$ENDTIMEEPOCH)
 		
@@ -136,14 +136,43 @@ elif [ $1 == "show" ]; then
 		{
 			echo $NEWDESC
 		}
+		else	
+		{
+			error_exit "Please provide correct option to display"
+		}
 		fi
 	}
 	else
 	{
 		error_exit "the file does not exist"
 	}
+	fi
+}		
+elif [ $1 == "link" ]; then
+{
+	LINKROOT="/home/$2"
+    	if [ ! -d $LINKROOT ]; then
+	{
+		error_exit "the specified user does not exist"
+	}
+	else
+	{	
+		FILEROOT=$LINKROOT/.calendar/$3
+		echo $FILEROOT
+		if [ ! -f $FILEROOT ];then
+		{
+	 		 error_exit "specified event does not exist"
+					
+		}
+		else
+		{
+			 ln -s $FILEROOT $DIR
+                        echo "event linked"
+		}
+		fi		
+	}
 	fi		
-} 
+}
 else
 {
 	error_exit "option not found. use only create option"	
