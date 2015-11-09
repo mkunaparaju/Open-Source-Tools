@@ -30,7 +30,7 @@ if [ "$1" == "create" ]; then
 	{
 	
 			EVENTSTART=$(date --date="$2" "+%s")
-			#echo $EVENTSTART
+			echo $EVENTSTART
 	}
 	else
 	{
@@ -40,9 +40,10 @@ if [ "$1" == "create" ]; then
 
 	if  [ "$3" != "" ]; then
 	{
-		DURATION=$(($3*60))
-		EVENTEND=$(($EVENTSTART+$DURATION ))
-		#echo $EVENTEND		
+		DURATION=$3
+		SECDURATION=$(($3*60))
+		EVENTEND=$(($EVENTSTART+$SECDURATION ))
+		echo $EVENTEND		
 	}
 	else
 	{
@@ -53,7 +54,7 @@ if [ "$1" == "create" ]; then
 	if [ "$4" != "" ]; then
 	{
 		TITLE="$4"
-		#echo $TITLE	
+		echo $TITLE	
 	}
 	else
 	{
@@ -79,9 +80,7 @@ if [ "$1" == "create" ]; then
 
 	if [ ! -f $DIR/$EVENTSTART ]; then
 	{
-		echo $DURATION > $DIR/$EVENTSTART
-		echo $TITLE > $DIR/$EVENTSTART
-	 	echo $DESCRIPTION > $DIR/$EVENTSTART
+		echo -e $DURATION\\n$TITLE\\n$DESCRIPTION  > $DIR/$EVENTSTART 
 	}
 	else
 	{
@@ -107,7 +106,43 @@ elif [ $1 == "delete" ]; then
 
 elif [ $1 == "show" ]; then
 {
+	if [ -f $DIR/$2 ]; then
+	{
+		STARTTIME=$(date -d @$2)
+		DURAT=$(awk 'NR==1' $DIR/$2)
+	#	SECDURAT=$(())
+		NEWTITLE=$(awk 'NR==2' $DIR/$2)
+		NEWDDESC=$(awk 'NR>2' $DIR/$2)
+		ENDTIMEEPOCH=$((($DURAT*60)+$2))
+		ENDTIME=$(date -d @$ENDTIMEEPOCH)
 		
+	#	echo $ENDTIMEEPOCH
+	#	echo "$2"
+		if [ ! $3 ]; then
+		{
+			echo $STARTTIME to $ENDTIME
+			echo $NEWTITLE
+			echo $NEWDESC 
+		}
+		elif [ $3 == "title" ]; then
+		{
+			echo $NEWTITLE 
+		}	
+		elif [ $3 == "time" ]; then
+		{
+			echo $STARTTIME to $ENDTIME
+		}
+		elif [ $3 == "description" ]; then
+		{
+			echo $NEWDESC
+		}
+		fi
+	}
+	else
+	{
+		error_exit "the file does not exist"
+	}
+	fi		
 } 
 else
 {
