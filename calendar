@@ -49,8 +49,7 @@ if [ "$1" == "create" ]; then
 	{
 		error_exit "Please provide duration"	
 	}
-	fi	
-
+	fi
 	if [ "$4" != "" ]; then
 	{
 		TITLE="$4"
@@ -58,7 +57,7 @@ if [ "$1" == "create" ]; then
 	}
 	else
 	{
-		read -p "Enter title of the event > " TITLE
+		read -p "Enter title of the event > " $TITLE
 		if [ "$TITLE" == "" ]; then 
 		{
 			error_exit "Title is required. Please Provide Title"
@@ -69,13 +68,6 @@ if [ "$1" == "create" ]; then
 	
 	read DESCRIPTION < /dev/stdin
 	#echo $DESCRIPTION
-
-#	if [ "$DESCRIPTION" == "" ]; then
-#	{
-#		read -p "Enter a Description(optional)> " DESCRIPTION
-#		#echo $DESCRIPTION
-#	}
-#	fi
 
 	if [ ! -f $DIR/$EVENTSTART ]; then
 	{
@@ -160,7 +152,7 @@ elif [ $1 == "link" ]; then
 	{	
 		FILEROOT=$LINKROOT/.calendar/$3
 		echo $FILEROOT
-		if [ ! -f $FILEROOT ];then
+		if [ ! -f $FILEROOT ]; then
 		{
 	 		 error_exit "specified event does not exist"
 					
@@ -173,6 +165,32 @@ elif [ $1 == "link" ]; then
 		fi		
 	}
 	fi		
+}
+elif [ $1 == "export" ]; then
+{
+	EXPORTUSERDIR="/home/$2/.calendar/"
+	BEGINTIME=$(date --date="$3" "+%s")
+	FINISHTIME=$(date --date="$4" "+%s")
+	FILES=$(find $EXPORTUSERDIR -type f |cut -d'/' -f5 )
+	SYMBOLICFILES=$(find $EXPORTUSERDIR -type l | cut -d'/' -f5)
+	#echo $FILES
+	#echo $SYMBOLICFILES
+	
+	for k in $FILES
+	{
+		if [ "$k" -ge "$BEGINTIME" ]; then
+		{
+			echo ""
+			if[ "$k" -le "$FINISHTIME" ]; then
+			{
+				echo  $k
+			}
+			fi
+			
+		}
+		fi	
+	}
+	
 }
 else
 {
