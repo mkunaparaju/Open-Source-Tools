@@ -10,27 +10,40 @@ USER_HOME="$HOME"
 
 DIR="$USER_HOME/.calendar"
 
-if [ ! -d $DIR ]; then
-{
-	mkdir $DIR
-	echo "dir made"
-	echo $DIR
-}
-fi
 function error_exit
 {
 	echo "$1" 1>&2
 	exit 1
 }
 
+if  [[ $# -gt 4  ]]; then
+         {
+                 error_exit "Invlid number of arguments"
+         }
+fi 
+
+
 if [ "$1" == "create" ]; then
 {
+
+	if  [[ $# -lt 2  ]]; then
+	{	
+		error_exit "Invlid number of arguments"
+	}
+	fi
+ 	
 
 	if [ "$2" != "" ]; then
 	{
 	
-			EVENTSTART=$(date --date="$2" "+%s")
-			#echo $EVENTSTART
+			EVENTSTART=$(date --date="$2" "+%s" 2> /dev/null) 
+			ERR=$?
+			if [ $ERR != 0 ]; then
+			{
+				error_exit "Invalid date"
+			}
+			fi 
+ 			#echo $EVENTSTART
 	}
 	else
 	{
@@ -40,10 +53,18 @@ if [ "$1" == "create" ]; then
 
 	if  [ "$3" != "" ]; then
 	{
-		DURATION=$3
-		SECDURATION=$(($3*60))
-		EVENTEND=$(($EVENTSTART+$SECDURATION ))
-		#echo $EVENTEND		
+		if [ "$3" -gt 0 ]; then 
+		{
+			DURATION=$3
+			SECDURATION=$(($3*60))
+			EVENTEND=$(($EVENTSTART+$SECDURATION ))
+			#echo $EVENTEND
+		}
+		else 
+		{
+			error_exit "Please provide a positive duration"
+		}
+		fi		
 	}
 	else
 	{
@@ -57,7 +78,10 @@ if [ "$1" == "create" ]; then
 	}
 	else
 	{
-		read -p "Enter title of the event > " $TITLE
+		echo -n "Enter title of the event  > "
+		read TITLE
+		#read -p "Enter title of the event > " $TITLE
+		#echo $TITLE
 		if [ "$TITLE" == "" ]; then 
 		{
 			error_exit "Title is required. Please Provide Title"
@@ -65,15 +89,29 @@ if [ "$1" == "create" ]; then
 		fi	
 	}
 	fi
-	
-	read DESCRIPTION < /dev/stdin
+
+
+	DESCRIPTION=$(cat)
+	#DESCRIPTION=$(sed '/^$/q') 
 	#echo $DESCRIPTION
+
+if [ ! -d $DIR ]; then
+{
+        mkdir $DIR
+       # echo "dir made"
+       # echo $DIR
+}
+fi
 
 	if [ ! -f $DIR/$EVENTSTART ]; then
 	{
 		echo -e $DURATION >> $DIR/$EVENTSTART 
 		echo -e $TITLE >> $DIR/$EVENTSTART
- 		echo -e $DESCRIPTION >> $DIR/$EVENTSTART
+ 		echo -e "$DESCRIPTION" >> $DIR/$EVENTSTART
+		#printf $DESCRIPTION >> $DIR/$EVENTSTART
+		chmod 777 $DIR/$EVENTSTART
+		echo "$EVENTSTART"	
+		exit 0
 	}
 	else
 	{
@@ -81,13 +119,27 @@ if [ "$1" == "create" ]; then
 	}
 	fi 
 }
-
 elif [ $1 == "delete" ]; then
 {
+
+ if  [[ $# -lt 2  ]]; then
+        {
+                error_exit "Invlid number of arguments"
+        }
+        fi
+
+if [ ! -d $DIR ]; then
+{
+	echo ".calendar directory is not avialable"
+	exit 2
+}
+fi
+
 	if [ -f $DIR/$2 ]; then
 	{
 		rm $DIR/$2
 		echo "delelted file "
+		exit 0
 	}	
 	else
 	{
@@ -99,15 +151,40 @@ elif [ $1 == "delete" ]; then
 
 elif [ $1 == "show" ]; then
 {
+if  [[ $# -lt 1  ]]; then
+        {
+                error_exit "Invlid number of arguments"
+        }
+        fi
+
+if [ ! -d $DIR ]; then
+{
+        echo ".calendar directory is not avialable"
+        exit 2
+}
+fi
+
 	if [ -f $DIR/$2 ]; then
 	{
-		STARTTIME=$(date -d @$2)
+		STARTTIME=$(date -d @$2 2> /dev/null)
+                        ERR=$?
+                        if [ $ERR != 0 ]; then
+                        {
+                                error_exit "Invalid start date"
+                        }
+                        fi
 		DURAT=$(awk 'NR==1' $DIR/$2)
 	#	SECDURAT=$(())
 		NEWTITLE=$(awk 'NR==2' $DIR/$2)
-		NEWDESC=$(awk 'NR>=3' $DIR/$2)
+		NEWDESC=$(cat $DIR/$2 | sed -n '3,$p')  #$(awk 'NR>=3' $DIR/$2)
 		ENDTIMEEPOCH=$((($DURAT*60)+$2))
-		ENDTIME=$(date -d @$ENDTIMEEPOCH)
+		ENDTIME=$(date -d @$ENDTIMEEPOCH 2> /dev/null)
+                        ERR=$?
+                        if [ $ERR != 0 ]; then
+                        {
+                                error_exit "Invalid end date"
+                        }
+                        fi
 		
 	#	echo $ENDTIMEEPOCH
 	#	echo "$2"
@@ -116,18 +193,22 @@ elif [ $1 == "show" ]; then
 			echo $STARTTIME to $ENDTIME
 			echo $NEWTITLE
 			echo $NEWDESC 
+			exit 0
 		}
 		elif [ $3 == "title" ]; then
 		{
-			echo $NEWTITLE 
+			echo $NEWTITLE
+			exit 0 
 		}	
 		elif [ $3 == "time" ]; then
 		{
 			echo $STARTTIME to $ENDTIME
+			exit 0
 		}
 		elif [ $3 == "description" ]; then
 		{
 			echo $NEWDESC
+			exit 0
 		}
 		else	
 		{
@@ -143,6 +224,21 @@ elif [ $1 == "show" ]; then
 }		
 elif [ $1 == "link" ]; then
 {
+
+
+if  [[ $# -lt 2  ]]; then
+         {
+                 error_exit "Invlid number of arguments"
+        }
+        fi
+if [ ! -d $DIR ]; then
+{
+        mkdir $DIR
+     #   echo "dir made"
+      #  echo $DIR
+}
+fi
+
 	LINKROOT="/home/$2"
     	if [ ! -d $LINKROOT ]; then
 	{
@@ -150,8 +246,15 @@ elif [ $1 == "link" ]; then
 	}
 	else
 	{	
+		if [ ! -d $LINKROOT/.calendar ]; then
+		{ 
+			
+			error_exit "The specified user's calendar does not exist"
+		}
+		fi		
+			 
 		FILEROOT=$LINKROOT/.calendar/$3
-		echo $FILEROOT
+		#echo $FILEROOT
 		if [ ! -f $FILEROOT ]; then
 		{
 	 		 error_exit "specified event does not exist"
@@ -159,44 +262,108 @@ elif [ $1 == "link" ]; then
 		}
 		else
 		{
-			 ln -s $FILEROOT $DIR
+			ln -s $FILEROOT $DIR
                         echo "event linked"
+			exit 0
 		}
 		fi		
-	}
+}
 	fi		
 }
 elif [ $1 == "export" ]; then
 {
+
+if  [[ $# -lt 2  ]]; then
+        {
+                error_exit "Invlid number of arguments"
+        }
+        fi
+
 	EXPORTUSERDIR="/home/$2/.calendar/"
-	BEGINTIME=$(date --date="$3" "+%s")
-	FINISHTIME=$(date --date="$4" "+%s")
+	if [ ! -d $EXPORTUSERDIR ]; then
+	{
+       		echo ".calendar directory is not avialable"
+        	exit 2
+	}
+	fi
+
+	BEGINTIME=$(date --date="$3" "+%s" 2> /dev/null)
+                        ERR=$?
+                        if [ $ERR != 0 ]; then
+                        {
+                                error_exit "Invalid begin  date"
+                        }
+                        fi
+	FINISHTIME=$(date --date="$4" "+%s" 2> /dev/null) 
+                        ERR=$?
+                        if [ $ERR != 0 ]; then
+                        {
+                                error_exit "Invalid finish date"
+                        }
+                        fi
 	FILES=$(find $EXPORTUSERDIR -type f |cut -d'/' -f5 )
 	SYMBOLICFILES=$(find $EXPORTUSERDIR -type l | cut -d'/' -f5)
 	#echo $FILES
 	#echo $SYMBOLICFILES
 	
-	for k in $FILES
+	if [ "$FILES" != "" ]; then
 	{
-		if [ "$k" -ge "$BEGINTIME" ]; then
-		{
-			echo ""
-			if[ "$k" -le "$FINISHTIME" ]; then
-			{
-				echo  $k
-			}
-			fi
-			
-		}
-		fi	
+		echo "BEGIN:VCALENDAR"
+		echo "VERSION:2.0"
+        	echo "PRODID:-//Open Source Tools//Calendar for $2//EN"
+		for k in $FILES
+         	{
+			KTITLE=$(awk 'NR==2' $EXPORTUSERDIR/$k)
+  			KDUR=$(awk 'NR==1' $EXPORTUSERDIR/$k)
+			KDESCRIPTION=$(awk 'NR>=3' $EXPORTUSERDIR/$k)
+                	if [[ $k -ge "$BEGINTIME" && $k -le "FINISHTIME" ]]; then
+                	{	
+				echo "BEGIN:VEVENT"
+				echo "UID:$2_$k"
+				echo "DTSTAMP:$(($k))Z"
+				echo "ORGANIZER;CN=$2:MAILTO:$USER@cims.nyu.edu"
+				echo "DTSTART:$(($k))Z"
+				echo "DTEND:$(($k + 60 * $KDUR))Z"
+				echo "SUMMARY:$KTITLE"
+				echo "DESCRIPTION:$KDESCRIPTION"
+				echo "END:VEVENT"
+         		}
+              		fi
+         	}
+	       	for s in $SYMBOLICFILES
+                {
+                 	 KSYMTITLE=$(awk 'NR==2' $EXPORTUSERDIR/$s)
+			 KDUR=$(awk 'NR==1' $EXPORTUSERDIR/$s)
+			 KSYMDESCRIPTION=$(awk 'NR>=3' $EXPORTUSERDIR/$s)
+                     if [[ $s -ge "$BEGINTIME" && $s -le "FINISHTIME" ]]; then
+                         {
+                                 echo "BEGIN:VEVENT"
+                                 echo "UID:$2_$s"
+                                 echo "DTSTAMP:$(($s))Z"
+                                 echo "ORGANIZER;CN=$2:MAILTO:$USER@cims.nyu.edu"
+                                 echo "DTSTART:$(($s))Z"
+                                 echo "DTEND:$(($s + 60 * $KDUR))Z"
+                                 echo "SUMMARY:$KSYMTITLE"
+                                 echo "DESCRIPTION:$KSYMDESCRIPTION"
+                                 echo "END:VEVENT"
+                         }
+                         fi
+                 }
+
+
+		echo "END:VCALENDAR"
 	}
-	
+	else
+	{
+		echo "There are no events in this duration to export"
+		exit 0
+	}
+	fi
+		
 }
 else
 {
-	error_exit "option not found. use only create option"	
+	error_exit "option not found. use create, show, delete, link and export options only"	
 }
 
 fi
-
-
